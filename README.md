@@ -6,6 +6,7 @@
 pip install pillow
 pip install pydub
 pip install pymad
+pip install youtube-dl
 ```
 
 # On Debian

@@ -36,6 +36,15 @@ def help():
     print("Usage: python splitalbum.py /path/to/album")
 
 
+def load_config():
+    global MUSIC_FOLDER
+    data_json = None
+    with open("config.json","r") as f:
+        data_json = json.load(f)
+        music_folder_relative_path = data_json['relative_music_dir_path']
+        MUSIC_FOLDER = Path.home().joinpath(music_folder_relative_path)
+    print(bcolors.OKBLUE+bcolors.BOLD+"Music directory: "+str(MUSIC_FOLDER)+bcolors.ENDC)    
+
 def menu():
     print(bcolors.HEADER+'1 - Download album'+bcolors.ENDC)
     print(bcolors.HEADER+'2 - Split downloaded album'+bcolors.ENDC)
@@ -325,6 +334,7 @@ def download_album():
 
 
 def main():
+    load_config()
     menu()
 
 
