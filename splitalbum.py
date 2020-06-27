@@ -28,12 +28,14 @@ class bcolors:
 
 
 def help():
-    print("You should have a tracks.txt with a list of musics and respective start time inside parenthesis")
-    print("Formats of tracklist accepted:")
-    print("Music Name (00:00)")
-    print("00:00 - Music Name")
-    print("Music Name - 00:00")
-    print("Usage: python splitalbum.py /path/to/album")
+    print(bcolors.WARNING+"You should have a tracks.txt with a list of musics and respective start time inside parenthesis"+bcolors.ENDC)
+    print(bcolors.WARNING+"Formats of tracklist accepted:"+bcolors.ENDC)
+    print(bcolors.WARNING+"Music Name (00:00)"+bcolors.ENDC)
+    print(bcolors.WARNING+"00:00 - Music Name"+bcolors.ENDC)
+    print(bcolors.WARNING+"Music Name - 00:00"+bcolors.ENDC)
+    print(bcolors.WARNING+"Usage: python splitalbum.py"+bcolors.ENDC)
+    print(bcolors.WARNING+"Add the tagmusics.sh to the path"+bcolors.ENDC)
+    print(bcolors.WARNING+"When asked the path of the album, give the name of the folder on your Music Directory"+bcolors.ENDC)
 
 
 def load_config():
@@ -49,6 +51,7 @@ def menu():
     print(bcolors.HEADER+'1 - Download album'+bcolors.ENDC)
     print(bcolors.HEADER+'2 - Split downloaded album'+bcolors.ENDC)
     print(bcolors.HEADER+'3 - Tag musics'+bcolors.ENDC)
+    print(bcolors.HEADER+"9 - How to use"+bcolors.ENDC)
     print(bcolors.HEADER+'0 - Exit'+bcolors.ENDC)
     opt = int(input(bcolors.WARNING+bcolors.BOLD +
                     "Choose an option: "+bcolors.ENDC))
@@ -57,7 +60,7 @@ def menu():
         download_album()
     elif opt == 2:
         filepath = input(bcolors.WARNING+bcolors.BOLD +
-                         "Enter the path of the album here: "+bcolors.ENDC)
+                         "Enter the name of the album's folder here: "+bcolors.ENDC)
         filepath = MUSIC_FOLDER.joinpath(filepath)
         os.chdir(filepath)
         read_tracklist(filepath)
@@ -67,7 +70,7 @@ def menu():
         album = input(bcolors.WARNING +
                       "Enter the name of the album here: "+bcolors.ENDC)
         path = input(bcolors.WARNING +
-                     "Enter the path of the folder here: "+bcolors.ENDC)
+                     "Enter the name of the album's folder here: "+bcolors.ENDC)
         try:
             subprocess.run(
                 ["tagmusics", "-f", path, "-a", author, "-A", album])
@@ -75,6 +78,8 @@ def menu():
                   "Musics tagged successfully"+bcolors.ENDC)
         except:
             print(bcolors.FAIL+"Error tagging"+bcolors.ENDC)
+    elif opt == 9:
+        help()
     elif opt == 0:
         return
 
