@@ -1,7 +1,4 @@
 from pydub import AudioSegment
-import textract
-import nltk
-import re
 import json
 import unicodedata
 import subprocess
