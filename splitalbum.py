@@ -28,12 +28,14 @@ class bcolors:
 
 
 def help():
-    print(bcolors.WARNING+"You should have a tracks.txt with a list of musics and respective start time inside parenthesis"+bcolors.ENDC)
-    print(bcolors.WARNING+"Formats of tracklist accepted:"+bcolors.ENDC)
-    print(bcolors.WARNING+"Music Name (00:00)"+bcolors.ENDC)
-    print(bcolors.WARNING+"00:00 - Music Name"+bcolors.ENDC)
-    print(bcolors.WARNING+"Music Name - 00:00"+bcolors.ENDC)
-    print(bcolors.WARNING+"Usage: python splitalbum.py"+bcolors.ENDC)
+    print("\n")
+    print(bcolors.WARNING+"You should have a tracks.txt in one of the following formats:"+bcolors.ENDC)
+    print(bcolors.OKGREEN+"Music Name (00:00)"+bcolors.ENDC)
+    print(bcolors.OKGREEN+"00:00 - Music Name"+bcolors.ENDC)
+    print(bcolors.OKGREEN+"Music Name - 00:00"+bcolors.ENDC)
+    print("\n")
+    print(bcolors.WARNING+bcolors.BOLD+"Usage: python splitalbum.py"+bcolors.ENDC)
+    print("\n")
     print(bcolors.WARNING+"Add the tagmusics.sh to the path"+bcolors.ENDC)
     print(bcolors.WARNING+"When asked the path of the album, give the name of the folder on your Music Directory"+bcolors.ENDC)
 
