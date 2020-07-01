@@ -8,6 +8,9 @@ from pathlib import *
 import shutil
 from PIL import Image
 import mad
+import eyed3
+from os import listdir
+from os.path import isfile, join
 
 musics = []
 numero_musicas = 0
@@ -47,7 +50,7 @@ def load_config():
         data_json = json.load(f)
         music_folder_relative_path = data_json['relative_music_dir_path']
         MUSIC_FOLDER = Path.home().joinpath(music_folder_relative_path)
-    print(bcolors.OKBLUE+bcolors.BOLD+"Music directory: "+str(MUSIC_FOLDER)+bcolors.ENDC)    
+    print(bcolors.OKBLUE+bcolors.BOLD+"Music directory: "+str(MUSIC_FOLDER)+bcolors.ENDC)
 
 def menu():
     print(bcolors.HEADER+'1 - Download album'+bcolors.ENDC)
@@ -100,6 +103,16 @@ def timestamp_to_seconds(timestamp):
         seconds = int(aux[0])*60*60 + int(aux[1])*60 + int(aux[2])
         return seconds
 
+def timestamp_to_ms(timestamp):
+    if len(timestamp.split(":")) == 2:
+        aux = timestamp.split(":")
+        ms = 1000*(int(aux[0])*60 + int(aux[1]))
+        return ms
+    elif len(timestamp.split(":")) == 3:
+        aux = timestamp.split(":")
+        ms = 1000*(int(aux[0])*60*60 + int(aux[1])*60 + int(aux[2]))
+        return ms
+
 
 def get_media_duration(media_path):
     mf = mad.MadFile(str(media_path.joinpath('album.mp3')))
@@ -111,12 +124,40 @@ def get_media_duration(media_path):
 
 
 def tag_musics(author, album, folder_path):
-    try:
-        subprocess.run(["tagmusics", "-f", folder_path,
-                        "-a", author, "-A", album])
-        return 1
-    except:
-        return 0
+    tag = eyeD3.Tag()
+    onlyfiles = [f for f in listdir(media_path) if isfile(join(media_path,f))]
+    for file in onlyfiles:
+        if file.endswith(".mp3"):
+            music = eyed3.load(file)
+            music.tag.artist = author
+            music.tag.album = album
+            if len(file.split("-")) > 1:
+                music_title = file.split("-")[1].strip()
+                opt = input("Is the music title: "+music_title+" ? (y/n)")
+                if opt.startswith("y") or opt.startswith("Y"):
+                    music.tag.title = music_title
+                else:
+                    music_title = input("Insert the title of the music here: ")
+                    music.tag.title = music_title
+            elif len(file.split("-")) > 0:
+                music_title = file.split("-")[0].strip()
+                opt = input("Is the music title: "+music_title+" ? (y/n)")
+                if opt.startswith("y") or opt.startswith("Y"):
+                    music.tag.title = music_title
+                else:
+                    music_title = input("Insert the title of the music here: ")
+                    music.tag.title = music_title
+            else:
+                music_title = file.split(".mp3")[0].strip()
+                opt = input("Is the music title: "+music_title+" ? (y/n)")
+                if opt.startswith("y") or opt.startswith("Y"):
+                    music.tag.title = music_title
+                else:
+                    music_title = input("Insert the title of the music here: ")
+                    music.tag.title = music_title
+
+            music.tag.save()
+            print(bcolors.OKGREEN+bcolors.BOLD+"Musics tagged successfully"+bcolors.ENDC)
 
 
 def split_album(filename, musics):
@@ -131,24 +172,18 @@ def split_album(filename, musics):
         subprocess.run(['ffmpeg', '-i', filename.joinpath('album.mp3'), '-vn',
                         '-acodec', 'copy', '-ss', start, '-to', end, name])
 
-        print(bcolors.WARNING+bcolors.BOLD +
-              "Album splitted successfully! Want to tag the musics now? (Y/n)"+bcolors.ENDC)
-        opt = input()
-        if opt.startswith("n") or opt.startswith("N"):
-            return
-        else:
-            author = input(bcolors.WARNING+bcolors.BOLD +
-                           "Insert the name of the author here: "+bcolors.ENDC)
-            album = input(bcolors.WARNING+bcolors.BOLD +
-                          "Insert the name of the album here: "+bcolors.ENDC)
+    print(bcolors.WARNING+bcolors.BOLD +
+          "Album splitted successfully! Want to tag the musics now? (Y/n)"+bcolors.ENDC)
+    opt = input()
+    if opt.startswith("n") or opt.startswith("N"):
+        return
+    else:
+        author = input(bcolors.WARNING+bcolors.BOLD +
+                       "Insert the name of the author here: "+bcolors.ENDC)
+        album = input(bcolors.WARNING+bcolors.BOLD +
+                      "Insert the name of the album here: "+bcolors.ENDC)
 
-            res = tag_musics(author, album, filename)
-            if res:
-                print(bcolors.BOLD+bcolors.OKGREEN +
-                      "Musics tagged successfully!"+bcolors.ENDC)
-            else:
-                print(bcolors.FAIL+"Error tagging the musics!"+bcolors.ENDC)
-
+        tag_musics(author, album, filename)
 
 def read_tracklist(filename):
     lines = []
@@ -201,8 +236,8 @@ def format_tracklist_type3(filename, lines):
             music["end"] = end_album
 
         if i > 0:
-            end = timestamp_to_seconds(start) - 1
-            end = seconds_to_timestamp(end)
+            end = timestamp_to_ms(start) - 30
+            end = seconds_to_timestamp(end/1000)
             musics[i-1]["end"] = end
 
         musics.append(music)
@@ -236,8 +271,8 @@ def format_tracklist_type2(filename, lines):
             music["end"] = end_album
 
         if i > 0:
-            end = timestamp_to_seconds(start) - 1
-            end = seconds_to_timestamp(end)
+            end = timestamp_to_ms(start) - 30
+            end = seconds_to_timestamp(end/1000)
             musics[i-1]["end"] = end
 
         musics.append(music)
@@ -283,7 +318,7 @@ def format_tracklist_type1(filename, lines):
 
         # set the end of the previous music to one seconds before the start of the current track
         if i > 0:
-            musics[i-1]["end"] = seconds_to_timestamp(init_seconds - 1)
+            musics[i-1]["end"] = seconds_to_timestamp((init_seconds*1000 - 30)/1000)
 
         musics.append(music)
         i += 1
@@ -335,7 +370,7 @@ def download_album():
     thumbnail_url = thumbnail_url.stdout.decode('utf-8').strip('\n')
     subprocess.run(["wget", "-O", "cover.webp", thumbnail_url])
 
-    # Save the thumnail as the album cover (cover.jpg)
+    # Save the thumbnail as the album cover (cover.jpg)
     album_cover = Image.open('cover.webp').convert('RGB')
     album_cover.save('cover.jpg', 'jpeg')
 
